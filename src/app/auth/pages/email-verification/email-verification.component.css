@@ -1,0 +1,24 @@
+.container {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  #main-content {
+    margin: 0;
+  }
+  
+  #secondary {
+    font-size: 12px;
+  }
+  
+  button {
+    margin-top: 20px;
+  }
+  
+  button:hover {
+    background-color: green;
+    transition: 0.5s;
+  }
