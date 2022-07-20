@@ -41,6 +41,14 @@ export class LoginComponent implements OnInit {
   }
 
   signInWithGoogle() {
-    
+    this.authService.signInWithGoogle().subscribe(
+      () => {
+        this.snackbar.open('Logado com Sucesso', 'Ok', {
+          duration: 2500,
+          verticalPosition: 'top'
+        })
+        this.router.navigateByUrl('/todos')
+      }
+    )
   }
 }

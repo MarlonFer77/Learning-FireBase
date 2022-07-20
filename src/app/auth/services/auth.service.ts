@@ -5,6 +5,7 @@ import { Router } from '@angular/router';
 import { from, Observable, tap } from 'rxjs';
 import { Todo } from 'src/app/models/todo';
 import { User } from 'src/app/models/user';
+import { GoogleAuthProvider } from "firebase/auth";
 @Injectable({
   providedIn: 'root'
 })
@@ -27,6 +28,32 @@ export class AuthService {
     return this.authentication.authState
   }
 
+  private saveUserData() {
+    return tap((credentials: firebase.default.auth.UserCredential) => {
+      // recuperar o uid do usuário
+      const uid = credentials.user?.uid as string
+
+      // recuperar o email do usuário
+
+      const email = credentials.user?.email as string
+
+      const todos: Todo[] = []
+
+      // criação de um novo documento na coleção de usuário
+      /* a função doc te retorna a referência para um documento na coleção
+      a partir do seu uid 
+      
+      a função set atribui valores ao documento que você está se referenciando*/
+      this.usersCollection.doc(uid).set({
+        uid: uid,
+        email: email,
+        todos: todos
+      })
+
+      credentials.user?.sendEmailVerification()
+    })
+  }
+
   signUpWithEmailAndPassword(email: string, password: string) {
     /* 
     O from transformará a Promise que o método createUserWithEmailAndPassword
@@ -36,34 +63,20 @@ export class AuthService {
     usuário no firebase pelo email e senha
     */
     return from(this.authentication.createUserWithEmailAndPassword(email, password)).pipe(
-      tap((credentials) => {
-        // recuperar o uid do usuário
-        const uid = credentials.user?.uid as string
-
-        // recuperar o email do usuário
-
-        const email = credentials.user?.email as string
-
-        const todos: Todo[] = []
-
-        // criação de um novo documento na coleção de usuário
-        /* a função doc te retorna a referência para um documento na coleção
-        a partir do seu uid 
-        
-        a função set atribui valores ao documento que você está se referenciando*/
-        this.usersCollection.doc(uid).set({
-          uid: uid,
-          email: email,
-          todos: todos
-        })
-
-        credentials.user?.sendEmailVerification()
-      })
+      this.saveUserData()
     )
   }
 
   signInWithEmailAndPassword(email: string, password: string): Observable<firebase.default.auth.UserCredential> {
     return from(this.authentication.signInWithEmailAndPassword(email, password))
+  }
+
+  signInWithGoogle() {
+    const googleProvider = new GoogleAuthProvider()
+
+    return from(this.authentication.signInWithPopup(googleProvider)).pipe(
+      this.saveUserData()
+    )
   }
 
   signOut() {
